@@ -3,6 +3,7 @@ const { Locality } = require("../models/locality");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const QRCode = require("qrcode");
+const mongoose = require("mongoose");
 
 //create user
 const signUp = async (req, res) => {
@@ -108,11 +109,15 @@ const signIn = async (req, res) => {
 //get users by id
 const getUserById = async (req, res) => {
   const { id } = req.params;
-  try {
-    const user = await User.findById(id).select("-password");
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(404).json({ message: error.message });
+  if (!mongoose.Types.ObjectId.isValid(id))
+    return res.status(404).send("no user with that id");
+  else {
+    try {
+      const user = await User.findById(id).select("-password");
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(404).json({ message: error.message });
+    }
   }
 };
 
@@ -125,7 +130,6 @@ const CountAllUsers = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
-
 
 module.exports = {
   signIn,
