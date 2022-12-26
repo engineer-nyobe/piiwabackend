@@ -1,140 +1,124 @@
 const { User } = require("../models/user");
-const { Locality } = require("../models/locality");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const QRCode = require("qrcode");
-const mongoose = require("mongoose");
+
+const secret = "test";
 
 //create user
-const signUp = async (req, res) => {
-  const {
-    username,
-    localname,
-    phone,
-    password,
-    role,
-    usercompany,
-    usernic,
-    userimg,
-  } = req.body;
-  let dataCode = {
-    username: username,
-    userphone: phone,
-    userrole: role,
-  };
-  let stJson = JSON.stringify(dataCode);
-  let toStringBase;
-  try {
-    const olduser = await User.findOne({ phone });
-    const oldlocality = await Locality.findOne({ localname });
+const GetUsers = async (req, res) => {
+  const usersdata = await User.find().select("-password");
+  res.send(usersdata);
+};
 
-    if (olduser) {
-      return res.status(400).json({ message: "user already exist" });
-    } else if (!oldlocality) {
-      return res.status(400).json({ message: "the structure does not exist" });
-    }
-    try {
-      toStringBase = await QRCode.toDataURL(stJson);
-      console.log(toStringBase);
-    } catch (error) {
-      console.log(error);
-    }
-    const result = await User.create({
-      username: username,
-      phone,
-      role,
-      company: usercompany,
-      userniccard: usernic,
-      singleuserimage: userimg,
-      password: bcrypt.hashSync(password, 12),
-      locality: oldlocality._id,
-      userqrcode: toStringBase,
+const DeleteteUser = async (req, res) => {
+  User.findByIdAndRemove(req.params.id)
+    .then((user) => {
+      if (user) {
+        return res.status(200).json({ message: "user deleted" });
+      } else {
+        return res.status(404).json({ message: "category does not deleted" });
+      }
+    })
+    .catch((error) => {
+      res.status(400).json({error: error });
     });
-    oldlocality.users.push(result);
-    oldlocality.save();
-    const secret = process.env.SECRET;
-    const token = jwt.sign(
-      {
-        phone: result.phone,
-      },
-      secret,
-      { expiresIn: "1d" }
-    );
-    res.status(201).json({ result, token });
-  } catch (error) {
-    res.status(500).json({ message: "the user is not created" });
-    console.log(error);
+};
+
+const GetUserById = async (req, res) => {
+  const { id } = req.params;
+  const usersdata = await User.findById(id)
+    .populate("account")
+    .select("-password");
+  res.send(usersdata);
+};
+
+const CreateUser = async (req, res) => {
+  const { phone, password } = req.body;
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const user = new User({
+    phone,
+    password: hashedPassword,
+  });
+  user
+    .save()
+    .then((createUser) => {
+      res.status(201).json(createUser);
+    })
+    .catch((error) => {
+      return res.status(500).json({
+        message: "this user already exist",
+      });
+    });
+};
+
+const CountUser = async (req, res) => {
+  const usersdata = await User.find().count();
+  if (!usersdata) {
+    return res.status(500).json({ message: "can not get number of users" });
+  } else {
+    return res.status(200).json(usersdata);
   }
 };
 
-//get all users
-const getUser = async (req, res) => {
-  try {
-    const user = await User.find().select("-password");
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(404).json({ message: error.message });
+const UpdateUser = async (req, res) => {
+  const { phone, password, code, usertype, username, usernic } = req.body;
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    {
+      phone,
+      password: hashedPassword,
+      usertype,
+      code,
+      username,
+      usernic,
+    },
+    { new: true }
+  );
+  if (!user) {
+    return res.status(400).json({message:"the user is not updated"});
+  } else {
+    return res.status(201).json(user);
   }
 };
 
-//login user
-const signIn = async (req, res) => {
+const SignIn = async (req, res) => {
   const { phone, password } = req.body;
   try {
-    const secret = process.env.SECRET;
-    const userExist = await User.findOne({ phone })
-      .populate("Locality")
-      .populate("deposits");
-    if (!userExist)
-      return res.status(404).json({
-        message: "this user does not exist check the username and password",
-      });
-    else if (userExist && bcrypt.compareSync(password, userExist.password)) {
-      const token = jwt.sign(
-        {
-          userId: userExist._id,
-        },
-        secret,
-        { expiresIn: "1d" }
-      );
-      res.status(200).send({ userExist, token });
-    } else {
-      res.status(400).send("password is wrong");
+    const userExist = await User.findOne({ phone });
+    if (!userExist) {
+      return res.status(404).json({ message: "the user does not exist" });
     }
-  } catch (error) {
-    res.status(409).json({ message: error.message });
-  }
-};
-
-//get users by id
-const getUserById = async (req, res) => {
-  const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id))
-    return res.status(404).send("no user with that id");
-  else {
-    try {
-      const user = await User.findById(id).select("-password");
-      res.status(200).json(user);
-    } catch (error) {
-      res.status(404).json({ message: error.message });
+    const isPasswordCorrect = await bcrypt.compare(
+      password,
+      userExist.password
+    );
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: "invalid credentials" });
     }
-  }
-};
-
-//count users into the database
-const CountAllUsers = async (req, res) => {
-  try {
-    const user = await User.find().count();
-    res.status(200).json(user);
+    const token = jwt.sign(
+      { phone: userExist.phone, id: userExist._id },
+      secret,
+      { expiresIn: "1h" }
+    );
+    return res.status(200).json({userExist,token});
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    return res.status(500).json({
+      message: "not login",
+    });
   }
 };
 
 module.exports = {
-  signIn,
-  signUp,
-  getUser,
-  getUserById,
-  CountAllUsers,
+  GetUsers,
+  DeleteteUser,
+  GetUserById,
+  CreateUser,
+  CountUser,
+  UpdateUser,
+  SignIn,
 };

@@ -1,33 +1,45 @@
 const mongoose = require("mongoose");
 
 const userSchema = mongoose.Schema({
-  role: String,
   phone: {
     type: Number,
-    require: true,
-    maxLength: 9,
-    minLength: 9,
+    default: null,
     unique: true,
   },
-  password: String,
-  username: String,
-  userposition: String,
-  company: {
+  password: {
     type: String,
-    default: "single",
+    default: null,
   },
-  userqrcode: {
+  code: {
     type: String,
-    default: "none",
+    default: null,
   },
-  city: String,
-  country: String,
-  userniccard: String,
-  singleuserimage: String,
-  deposits: [{ type: mongoose.Schema.Types.ObjectId, ref: "Transaction" }],
-  withdraw: [{ type: mongoose.Schema.Types.ObjectId, ref: "Transaction" }],
-  useraccount: { type: mongoose.Schema.Types.ObjectId, ref: "Accountuser" },
-  locality: { type: mongoose.Schema.Types.ObjectId, ref: "Locality" },
+  usertype: {
+    type: String,
+    default: "simple",
+  },
+  createdat: {
+    type: Date,
+    default: new Date(),
+  },
+  account: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Account",
+    default: null,
+  },
+  sessions: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Session",
+    default: null,
+  }],
+  username: {
+    type: String,
+    default: null,
+  },
+  usernic: {
+    type: String,
+    default: null,
+  },
 });
 
 exports.User = mongoose.model("User", userSchema);

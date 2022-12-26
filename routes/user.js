@@ -1,12 +1,36 @@
 const express = require("express");
-const { signIn, signUp, getUser, getUserById, CountAllUsers } = require("../controller/user");
-
+const { User } = require("../models/user");
+const bcrypt = require("bcrypt");
+const {
+  GetUsers,
+  DeleteteUser,
+  GetUserById,
+  CreateUser,
+  CountUser,
+  UpdateUser,
+  SignIn
+} = require("../controller/user");
 const router = express.Router();
 
-router.get("/",getUser);
-router.get("/number",CountAllUsers);
-router.get("/:id",getUserById);
-router.post("/login", signIn);
-router.post("/", signUp);
+//user creation
+router.post("/", CreateUser);
+
+//get all users
+router.get("/", GetUsers);
+
+//sign in
+router.post("/signin", SignIn);
+
+//count users
+router.get("/number", CountUser);
+
+//get user by id
+router.get("/:id", GetUserById);
+
+// user delete
+router.delete("/:id", DeleteteUser);
+
+//update user
+router.put("/:id", UpdateUser);
 
 module.exports = router;
