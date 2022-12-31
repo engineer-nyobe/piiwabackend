@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const { Session } = require("../models/sessions");
 const { User } = require("../models/user");
-const { Spaccount } = require("../models/Spaccount");
+const { Spaccount } = require("../models/spaccount");
 
 //create session
 router.post("/", async (req, res) => {

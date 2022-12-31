@@ -1,6 +1,6 @@
 const { Transaction } = require("../models/transaction");
 const { Account } = require("../models/account");
-const { Spaccount } = require("../models/Spaccount");
+const { Spaccount } = require("../models/spaccount");
 const { Session } = require("../models/sessions");
 const { User } = require("../models/user");
 
