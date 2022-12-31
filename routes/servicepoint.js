@@ -7,10 +7,14 @@ const {
   CreateServicepoint,
   GetAllservicespoints,
   GetServicepointByid,
+  UpdateSpAccount,
 } = require("../controller/servicepoint");
 
 //servicepoint creation
 router.post("/", CreateServicepoint);
+
+//servicepoint creation
+router.put("/update/:id", UpdateSpAccount);
 
 //get all servicepoint
 router.get("/", GetAllservicespoints);

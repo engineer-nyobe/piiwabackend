@@ -111,8 +111,31 @@ const GetServicepointByid = async (req, res) => {
   }
 };
 
+const UpdateSpAccount = async (req, res) => {
+  const { id } = req.params;
+  const {amount} = req.body;
+  
+    const accountReceiver = await Spaccount.findById(id);
+
+    const amountsend = parseInt(amount);
+
+    const coins = accountReceiver.amount + amountsend;
+    const data = await Spaccount.findByIdAndUpdate(
+      id,
+      { amount: coins },
+      { new: true }
+    );
+    if (!data) {
+      return res.status(400).json({ message: "this account is not updated" });
+    } else {
+      return res.status(200).json(data);
+    }
+  
+};
+
 module.exports = {
   CreateServicepoint,
   GetAllservicespoints,
   GetServicepointByid,
+  UpdateSpAccount,
 };
