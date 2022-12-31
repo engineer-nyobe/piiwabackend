@@ -1,5 +1,5 @@
 const { Account } = require("../models/account");
-const { Spaccount } = require("../models/Spaccount");
+const { Spaccount } = require("../models/spaccount");
 const { User } = require("../models/user");
 const {ServicePoint} = require("../models/servicepoint")
 
