@@ -12,6 +12,7 @@ const transactionRouter = require('./routes/transaction');
 const servicepointRouter = require('./routes/servicepoint')
 const sessionRouter = require('./routes/sessions')
 const countRouter = require('./routes/count')
+const webUserRouter = require('./routes/webusers')
 
 const app = express();
 app.use(cors());
@@ -25,6 +26,7 @@ app.use(bodyParser.json());
 app.use(morgan("tiny"));
 
 app.use("/users", userRouter);
+app.use("/webusers", webUserRouter);
 app.use("/account", accountRouter);
 app.use("/transaction", transactionRouter);
 app.use("/servicepoint", servicepointRouter);

@@ -12,7 +12,7 @@ const servicepointSchema = mongoose.Schema({
 
   account: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Account",
+    ref: "Spaccount",
     default: null,
   },
 });

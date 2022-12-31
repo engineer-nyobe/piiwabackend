@@ -1,5 +1,7 @@
 const { Account } = require("../models/account");
+const { Spaccount } = require("../models/Spaccount");
 const { User } = require("../models/user");
+const {ServicePoint} = require("../models/servicepoint")
 
 const CreateAccount = async (req, res) => {
   const { owner } = req.body;
@@ -26,6 +28,31 @@ const CreateAccount = async (req, res) => {
     return res.status(201).json(createAccount);
   }
 };
+const CreateSpaccount = async (req, res) => {
+  const { servicepoint } = req.body;
+  const account = new Spaccount({
+    servicepoint,
+  });
+  const createAccount = await account.save();
+
+  if (!createAccount) {
+    return res.status(500).json({
+      massage: "account is not created",
+    });
+  } else {
+    const serv = await ServicePoint.findByIdAndUpdate(
+      servicepoint,
+      {
+        account: createAccount._id,
+      },
+      { new: true }
+    );
+    if (!serv) {
+      return res.status(400).json({ message: "user error creationfailed" });
+    }
+    return res.status(201).json(createAccount);
+  }
+};
 
 const GetAllAccounts = async (req, res) => {
   const accountData = await Account.find();
@@ -33,11 +60,13 @@ const GetAllAccounts = async (req, res) => {
 };
 
 const UpdateAmountAccount = async (req, res) => {
-  const {id} = req.params;
+  const { id } = req.params;
   const { amount } = req.body;
   const accountReceiver = await Account.findById(id);
 
-  const coins = accountReceiver.amount + amount;
+  const amountsend = parseInt(amount);
+
+  const coins = accountReceiver.amount + amountsend;
   const data = await Account.findByIdAndUpdate(
     id,
     { amount: coins },
@@ -67,15 +96,40 @@ const UpdateTypeAccount = async (req, res) => {
 const GetAccountById = async (req, res) => {
   const { id } = req.params;
   const accountData = await Account.findById(id)
-    .populate("transactions")
+    .populate({
+      path: "transactions",
+      populate: {
+        path: "sender",
+        select: { owner: 1 },
+        populate: {
+          path: "owner",
+          select: { phone: 1 },
+        },
+      },
+    })
+    .populate({
+      path: "transactions",
+      populate: {
+        path: "receiver",
+        select: { owner: 1 },
+        populate: {
+          path: "owner",
+          select: { phone: 1 },
+        },
+      },
+    })
     .populate("sessions")
-    .populate("owner");
+    .populate({
+      path: "owner",
+      select: { password: 0, account:0},
+    });
   res.send(accountData);
 };
 
 module.exports = {
   CreateAccount,
   GetAllAccounts,
+  CreateSpaccount,
   UpdateAmountAccount,
   UpdateTypeAccount,
   GetAccountById,

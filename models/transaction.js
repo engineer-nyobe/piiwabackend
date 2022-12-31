@@ -7,14 +7,14 @@ const transactionSchema = mongoose.Schema({
     default: 0,
   },
   receiver: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
-  servicepoint: { type: mongoose.Schema.Types.ObjectId, ref: "ServicePoint" },
+  servicepoint: { type: mongoose.Schema.Types.ObjectId, ref: "Spaccount" },
   createdat: {
     type: Date,
     default: new Date(),
   },
   operationtype: {
     type: String,
-    default: null,
+    default: "transfert",
   },
 });
 

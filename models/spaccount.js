@@ -1,15 +1,14 @@
 const mongoose = require("mongoose");
 
-const accountSchema = mongoose.Schema({
+const SpaccountSchema = mongoose.Schema({
   accounttype: {
     type: String,
-    default: "simple",
+    default: "servicepoint",
   },
   amount: {
     type: Number,
     default: 0,
   },
-  owner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   servicepoint: { type: mongoose.Schema.Types.ObjectId, ref: "ServicePoint" },
   sessions: [
     { type: mongoose.Schema.Types.ObjectId, ref: "Session", default: null },
@@ -18,13 +17,6 @@ const accountSchema = mongoose.Schema({
     type: Date,
     default: new Date(),
   },
-  transactions: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Transaction",
-      default: null,
-    },
-  ],
 });
 
-exports.Account = mongoose.model("Account", accountSchema);
+exports.Spaccount = mongoose.model("Spaccount", SpaccountSchema);

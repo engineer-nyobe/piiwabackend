@@ -11,7 +11,7 @@ const sessionSchema = mongoose.Schema({
   },
   servicepoint: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Account",
+    ref: "Spaccount",
     default: null,
   },
   manager: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },

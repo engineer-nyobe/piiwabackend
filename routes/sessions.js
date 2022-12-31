@@ -3,20 +3,20 @@ const express = require("express");
 const router = express.Router();
 const { Session } = require("../models/sessions");
 const { User } = require("../models/user");
-const { Account } = require("../models/account");
+const { Spaccount } = require("../models/Spaccount");
 
 //create session
 router.post("/", async (req, res) => {
-  const { start, end, servicepoint, manager } = req.body;
+  const { start, end, name, phone } = req.body;
 
-  const servicepointCouncerned = await Account.findById(servicepoint);
-  const managerCouncerned = await User.findById(manager);
+  const servicepointCouncerned = await Spaccount.findOne({ name });
+  const managerCouncerned = await User.findOne({ phone });
 
   const session = new Session({
     start,
     end,
-    servicepoint,
-    manager,
+    servicepoint: servicepointCouncerned._id,
+    manager: managerCouncerned._id,
   });
   const data = await session.save();
   servicepointCouncerned.sessions.push(data);
@@ -56,8 +56,28 @@ router.put("/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
   const accountData = await Session.findById(id)
-    .populate("servicepoint")
-    .populate("manager");
+  .populate({
+    path: "transactions",
+    populate: {
+      path: "receiver",
+      select: { owner: 1 },
+      populate: {
+        path: "owner",
+        select: { phone: 1 },
+      },
+    },
+  })
+  .populate({
+    path: "transactions",
+    populate: {
+      path: "sender",
+      select: { owner: 1 },
+      populate: {
+        path: "owner",
+        select: { phone: 1 },
+      },
+    },
+  });
   res.send(accountData);
 });
 
