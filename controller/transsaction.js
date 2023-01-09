@@ -61,7 +61,7 @@ const CreateTransactionUserToUser = async (req, res) => {
 const GetAccountByPhone = async (phone) => {
   const getPhoneAccount = await User.findOne({ phone }).select("account");
   if (!getPhoneAccount) {
-    return res.status(404).json({ message: "no user with this phone" });
+    return console.log("no user with this phone");
   } else {
     return getPhoneAccount.account;
   }
@@ -69,7 +69,7 @@ const GetAccountByPhone = async (phone) => {
 const GetAccountByName = async (name) => {
   const getSpAccount = await Spaccount.findOne({ name });
   if (!getSpAccount) {
-    return res.status(404).json({ message: "no sp with this name" });
+    return console.log("no sp with this name");
   } else {
     return getSpAccount;
   }

@@ -1,4 +1,5 @@
 const { User } = require("../models/user");
+const { ServicePoint } = require("../models/servicepoint");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -90,22 +91,35 @@ const SignIn = async (req, res) => {
   const { phone, password } = req.body;
   try {
     const userExist = await User.findOne({ phone });
-    if (!userExist) {
+    const spExist = await ServicePoint.findOne({ phone });
+    if (!userExist && !spExist) {
       return res.status(404).json({ message: "the user does not exist" });
+    }else if (userExist && !spExist) {
+      const isPasswordCorrect = await bcrypt.compare(
+        password,
+        userExist.password
+      );
+      if (!isPasswordCorrect) {
+        return res.status(400).json({ message: "invalid credentials" });
+      }
+      const token = jwt.sign(
+        { phone: userExist.phone, id: userExist._id },
+        secret,
+        { expiresIn: "1h" }
+      );
+      return res.status(200).json({userExist,token});
+    }else if (!userExist && spExist) {
+      if(spExist.name === password){
+        const token = jwt.sign(
+          { phone: spExist.phone, id: spExist._id },
+          secret,
+          { expiresIn: "1h" }
+        );
+        return res.status(200).json({ spExist, token });
+      }else{
+        return res.status(400).json({ message: "invalid credentials" });
+      }
     }
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      userExist.password
-    );
-    if (!isPasswordCorrect) {
-      return res.status(400).json({ message: "invalid credentials" });
-    }
-    const token = jwt.sign(
-      { phone: userExist.phone, id: userExist._id },
-      secret,
-      { expiresIn: "1h" }
-    );
-    return res.status(200).json({userExist,token});
   } catch (error) {
     return res.status(500).json({
       message: "not login",
