@@ -109,7 +109,7 @@ const SignIn = async (req, res) => {
       );
       return res.status(200).json({userExist,token});
     }else if (!userExist && spExist) {
-      if(spExist.name == password){
+      if(spExist.name){
         const token = jwt.sign(
           { phone: spExist.phone, id: spExist._id },
           secret,
@@ -117,7 +117,7 @@ const SignIn = async (req, res) => {
         );
         return res.status(200).json({ spExist, token });
       }else{
-        return res.status(400).json({ message: "invalid credentials" });
+        return res.status(400).json({ message: "invalid sp" });
       }
     }
   } catch (error) {
