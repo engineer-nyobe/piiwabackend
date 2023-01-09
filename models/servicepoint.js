@@ -1,9 +1,15 @@
 const mongoose = require("mongoose");
 
 const servicepointSchema = mongoose.Schema({
+  phone: {
+    type: Number,
+    default: null,
+    unique: true,
+  },
   name: {
     type: String,
     default: null,
+    unique: true,
   },
 
   latitude: { type: String, default: null },

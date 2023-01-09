@@ -113,6 +113,19 @@ const SignIn = async (req, res) => {
   }
 };
 
+const GetAllSPM = async(req,res) => {
+  try {
+    const usersdata = await User.find({usertype:"SPM"}).select("-password");
+    if(!usersdata){
+      return res.status(400).json({message:"no spm exist"})
+    }else{
+      return res.status(200).json(usersdata)
+    }
+  } catch (error) {
+    return res.status(404).json({message:" can not get spm "+error});
+  }
+}
+
 module.exports = {
   GetUsers,
   DeleteteUser,
@@ -121,4 +134,5 @@ module.exports = {
   CountUser,
   UpdateUser,
   SignIn,
+  GetAllSPM,
 };

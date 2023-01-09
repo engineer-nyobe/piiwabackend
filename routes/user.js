@@ -8,7 +8,8 @@ const {
   CreateUser,
   CountUser,
   UpdateUser,
-  SignIn
+  SignIn,
+  GetAllSPM
 } = require("../controller/user");
 const router = express.Router();
 
@@ -17,6 +18,9 @@ router.post("/", CreateUser);
 
 //get all users
 router.get("/", GetUsers);
+
+//get all spm
+router.get("/spm", GetAllSPM);
 
 //sign in
 router.post("/signin", SignIn);

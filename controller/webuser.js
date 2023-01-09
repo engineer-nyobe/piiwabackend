@@ -155,6 +155,99 @@ const webUdateUserData = async (req, res) => {
   }
 };
 
+const GetAllSPM = async (req, res) => {
+  try {
+    const usersdata = await User.find({ usertype: "SPM" }).select("-password");
+    if (!usersdata) {
+      return res.status(400).json({ message: "no spm exist" });
+    } else {
+      return res.status(200).json(usersdata);
+    }
+  } catch (error) {
+    return res.status(404).json({ message: " can not get spm " + error });
+  }
+};
+
+const GetSpmById = async (req, res) => {
+  const { id } = req.params;
+  const usersdata = await User.findById(id)
+    .populate({
+      path: "account",
+      select: { owner: 0 },
+      populate: {
+        path: "transactions",
+        populate: {
+          path: "sender",
+          select: { owner: 1 },
+          populate: {
+            path: "owner",
+            select: { phone: 1 },
+          },
+        },
+      },
+    })
+    .populate({
+      path: "account",
+      select: { owner: 0 },
+      populate: {
+        path: "transactions",
+        populate: {
+          path: "receiver",
+          select: { owner: 1 },
+          populate: {
+            path: "owner",
+            select: { phone: 1 },
+          },
+        },
+      },
+    })
+    .populate({
+      path: "sessions",
+      populate: {
+        path: "servicepoint",
+        select: { sessions: 0, amount: 0, accounttype: 0 },
+        populate: {
+          path: "servicepoint",
+          select: { name: 1 },
+        },
+      },
+    })
+    .populate({
+      path: "sessions",
+      select: { manager: 0 },
+      populate: {
+        path: "transactions",
+        select: { servicepoint: 0 },
+        populate: {
+          path: "receiver",
+          select: { owner :1},
+          populate:{
+            path:"owner",
+            select:{phone:1}
+          }
+        },
+      },
+    })
+    .populate({
+      path: "sessions",
+      select: { manager: 0 },
+      populate: {
+        path: "transactions",
+        select: { servicepoint: 0 },
+        populate: {
+          path: "sender",
+          select: { owner :1},
+          populate:{
+            path:"owner",
+            select:{phone:1}
+          }
+        },
+      },
+    })
+    .select("-password -code");
+  return res.status(200).json(usersdata);
+};
+
 module.exports = {
   GetWebUsers,
   DeleteteWebUser,
@@ -164,4 +257,6 @@ module.exports = {
   UpdateWebUser,
   WebSignIn,
   webUdateUserData,
+  GetAllSPM,
+  GetSpmById,
 };

@@ -3,10 +3,11 @@ const { Spaccount } = require("../models/spaccount");
 const { ServicePoint } = require("../models/servicepoint");
 
 const CreateServicepoint = async (req, res) => {
-  const { name, latitude, longitude } = req.body;
+  const { phone,name, latitude, longitude } = req.body;
 
   const servicepoint = new ServicePoint({
     name,
+    phone,
     latitude,
     longitude,
   });

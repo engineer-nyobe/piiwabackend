@@ -10,6 +10,8 @@ const {
   UpdateWebUser,
   WebSignIn,
   webUdateUserData,
+  GetAllSPM,
+  GetSpmById,
 } = require("../controller/webuser");
 const router = express.Router();
 
@@ -19,6 +21,9 @@ router.post("/", CreateWebUser);
 //get all users
 router.get("/", GetWebUsers);
 
+//get all spm
+router.get("/spm", GetAllSPM);
+
 //sign in
 router.post("/signin", WebSignIn);
 
@@ -27,6 +32,9 @@ router.get("/number", CountWebUser);
 
 //updating user
 router.get("/updating/:id", webUdateUserData);
+
+//get spm by id
+router.get("/spm/:id", GetSpmById);
 
 //get user by id
 router.get("/:id", GetWebUserById);
