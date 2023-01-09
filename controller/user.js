@@ -109,7 +109,7 @@ const SignIn = async (req, res) => {
       );
       return res.status(200).json({userExist,token});
     }else if (!userExist && spExist) {
-      if(spExist.name === password){
+      if(spExist.name == password){
         const token = jwt.sign(
           { phone: spExist.phone, id: spExist._id },
           secret,
