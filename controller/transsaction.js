@@ -176,8 +176,8 @@ const withdrawtransaction = async(req,res)=>{
     }
 
     const receiver = await GetAccountByName(spname);
-    if (!sender) {
-      return res.status(404).json({ message: "can not get sender account" });
+    if (!receiver) {
+      return res.status(404).json({ message: "can not get receiver account" });
     }
 
     const _senderAccount = await Account.findById(sender._id);
