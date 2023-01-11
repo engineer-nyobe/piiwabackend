@@ -3,7 +3,7 @@ const { Spaccount } = require("../models/spaccount");
 const { ServicePoint } = require("../models/servicepoint");
 
 const CreateServicepoint = async (req, res) => {
-  const { phone,name, latitude, longitude } = req.body;
+  const { phone, name, latitude, longitude } = req.body;
 
   const servicepoint = new ServicePoint({
     name,
@@ -54,84 +54,84 @@ const GetAllservicespoints = async (req, res) => {
 
 const GetServicepointByid = async (req, res) => {
   const { id } = req.params;
-  const data = await ServicePoint.findById(id)
-    .populate({
-      path: "account",
-      select: { servicepoint: 0 },
-      populate: {
-        path: "sessions",
+  try {
+    const data = await ServicePoint.findById(id)
+      .populate({
+        path: "account",
         select: { servicepoint: 0 },
         populate: {
-          path: "manager",
-          select: { phone: 1 },
-        },
-      },
-    })
-    .populate({
-      path: "account",
-      select: { servicepoint: 0, owner: 0 },
-      populate: {
-        path: "sessions",
-        select: { servicepoint: 0 },
-        populate: {
-          path: "transactions",
+          path: "sessions",
+          select: { servicepoint: 0 },
           populate: {
-            path: "receiver",
-            select: { owner: 1 },
+            path: "manager",
+            select: { phone: 1 },
+          },
+        },
+      })
+      .populate({
+        path: "account",
+        select: { servicepoint: 0, owner: 0 },
+        populate: {
+          path: "sessions",
+          select: { servicepoint: 0 },
+          populate: {
+            path: "transactions",
             populate: {
-              path: "owner",
-              select: { phone: 1 },
+              path: "receiver",
+              select: { owner: 1 },
+              populate: {
+                path: "owner",
+                select: { phone: 1 },
+              },
             },
           },
         },
-      },
-    })
-    .populate({
-      path: "account",
-      select: { servicepoint: 0, owner: 0 },
-      populate: {
-        path: "sessions",
-        select: { servicepoint: 0 },
+      })
+      .populate({
+        path: "account",
+        select: { servicepoint: 0, owner: 0 },
         populate: {
-          path: "transactions",
+          path: "sessions",
+          select: { servicepoint: 0 },
           populate: {
-            path: "sender",
-            select: { owner: 1 },
+            path: "transactions",
             populate: {
-              path: "owner",
-              select: { phone: 1 },
+              path: "sender",
+              select: { owner: 1 },
+              populate: {
+                path: "owner",
+                select: { phone: 1 },
+              },
             },
           },
         },
-      },
-    });
-  if (!data) {
-    return res.status(404).json({ message: "can not get this servicepoint" });
-  } else {
+      });
     return res.status(200).json(data);
+  } catch (error) {
+    console.log(error);
+    return res.status(404).json({ message: "can not get this servicepoint" });
   }
 };
 
 const UpdateSpAccount = async (req, res) => {
   const { id } = req.params;
-  const {amount} = req.body;
-  
-    const accountReceiver = await Spaccount.findById(id);
+  const { amount } = req.body;
 
-    const amountsend = parseInt(amount);
+  const accountReceiver = await Spaccount.findById(id);
 
-    const coins = accountReceiver.amount + amountsend;
-    const data = await Spaccount.findByIdAndUpdate(
-      id,
-      { amount: coins },
-      { new: true }
-    );
-    if (!data) {
-      return res.status(400).json({ message: "this account is not updated" });
-    } else {
-      return res.status(200).json(data);
-    }
-  
+  const amountsend = parseInt(amount);
+
+  const coins = accountReceiver.amount + amountsend;
+  const data = await Spaccount.findByIdAndUpdate(
+    id,
+    { amount: coins },
+    { new: true }
+  );
+  if (!data) {
+    return res.status(400).json({ message: "this account is not updated" });
+  } else {
+    return res.status(200).json(data);
+  }
 };
 
 module.exports = {

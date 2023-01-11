@@ -26,27 +26,34 @@ const CreateSession = async (req, res) => {
     const servicepointCouncerned = await Spaccount.findById(
       servicepointAccountId
     );
+    const sessionExist = await Session.findOne({
+      $and: [{ servicepoint: servicepointCouncerned._id }, { end: null }],
+    });
+
+    if (sessionExist) {
+      return res.status(404).json({ message: "session already in running" });
+    }
     //return res.status(200).json(servicepointCouncerned);
     const session = new Session({
-     start,
-     end,
-     servicepoint: servicepointCouncerned._id,
-     manager: managerCouncerned._id,
-   });
-   try {
-     const data = await session.save();
-     servicepointCouncerned.sessions.push(data);
-     servicepointCouncerned.save();
-     managerCouncerned.sessions.push(data);
-     managerCouncerned.save();
-     if (!data) {
-       return res.status(404).json({ message: "session is not created" });
-     } else {
-       return res.status(201).json(data);
-     }
-   } catch (error) {
-     return res.status(404).json({ message: "session is not created" });
-   }
+      start,
+      end,
+      servicepoint: servicepointCouncerned._id,
+      manager: managerCouncerned._id,
+    });
+    try {
+      const data = await session.save();
+      servicepointCouncerned.sessions.push(data);
+      servicepointCouncerned.save();
+      managerCouncerned.sessions.push(data);
+      managerCouncerned.save();
+      if (!data) {
+        return res.status(404).json({ message: "session is not created" });
+      } else {
+        return res.status(201).json(data);
+      }
+    } catch (error) {
+      return res.status(404).json({ message: "session is not created" });
+    }
   }
 };
 
