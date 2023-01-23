@@ -6,6 +6,10 @@ const servicepointSchema = mongoose.Schema({
     default: null,
     unique: true,
   },
+  passwordsp: {
+    type: String,
+    default: null,
+  },
   name: {
     type: String,
     default: null,

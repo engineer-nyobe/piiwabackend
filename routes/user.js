@@ -9,7 +9,8 @@ const {
   CountUser,
   UpdateUser,
   SignIn,
-  GetAllSPM
+  GetAllSPM,
+  UserMobileCreation,
 } = require("../controller/user");
 const router = express.Router();
 
@@ -24,6 +25,9 @@ router.get("/spm", GetAllSPM);
 
 //sign in
 router.post("/signin", SignIn);
+
+//create user by mobile
+router.post("/mobileuser", UserMobileCreation);
 
 //count users
 router.get("/number", CountUser);

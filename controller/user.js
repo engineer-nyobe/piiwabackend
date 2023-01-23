@@ -1,4 +1,5 @@
 const { User } = require("../models/user");
+const { Account } = require("../models/account");
 const { ServicePoint } = require("../models/servicepoint");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -21,7 +22,7 @@ const DeleteteUser = async (req, res) => {
       }
     })
     .catch((error) => {
-      res.status(400).json({error: error });
+      res.status(400).json({ error: error });
     });
 };
 
@@ -55,6 +56,45 @@ const CreateUser = async (req, res) => {
     });
 };
 
+const UserMobileCreation = async (req, res) => {
+  const { phone, password } = req.body;
+  const UserExist = await User.findOne({ phone });
+  if (UserExist) {
+    return res.status(500).json({ message: "the user already  exist" });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+  const UserCreation = new User({ phone, password: hashedPassword });
+  const userCreated = await UserCreation.save();
+  if (userCreated) {
+    const AccountCreation = new Account({
+      owner: userCreated._id,
+    });
+    const AccountCreated = await AccountCreation.save();
+    if (AccountCreated) {
+      const usercreated = await User.findByIdAndUpdate(
+        userCreated._id,
+        {
+          account: AccountCreated._id,
+        },
+        { new: true }
+      );
+      const token = jwt.sign(
+        { id: userCreated._id },
+        secret,
+        { expiresIn: "1h" }
+      );
+      return res.status(201).json({userExist:usercreated, token});
+    }else{
+      return res.status(500).json({ message: "can not create an account" });
+    }
+  }else{
+    return res.status(500).json({ message: "can not create this user" });
+
+  }
+};
+
 const CountUser = async (req, res) => {
   const usersdata = await User.find().count();
   if (!usersdata) {
@@ -81,7 +121,7 @@ const UpdateUser = async (req, res) => {
     { new: true }
   );
   if (!user) {
-    return res.status(400).json({message:"the user is not updated"});
+    return res.status(400).json({ message: "the user is not updated" });
   } else {
     return res.status(201).json(user);
   }
@@ -94,7 +134,7 @@ const SignIn = async (req, res) => {
     const spExist = await ServicePoint.findOne({ phone });
     if (!userExist && !spExist) {
       return res.status(404).json({ message: "the user does not exist" });
-    }else if (userExist && !spExist) {
+    } else if (userExist && !spExist) {
       const isPasswordCorrect = await bcrypt.compare(
         password,
         userExist.password
@@ -107,16 +147,16 @@ const SignIn = async (req, res) => {
         secret,
         { expiresIn: "1h" }
       );
-      return res.status(200).json({userExist,token});
-    }else if (!userExist && spExist) {
-      if(spExist.name === password){
+      return res.status(200).json({ userExist, token });
+    } else if (!userExist && spExist) {
+      if (spExist.name === password) {
         const token = jwt.sign(
           { phone: spExist.phone, id: spExist._id },
           secret,
           { expiresIn: "1h" }
         );
         return res.status(200).json({ spExist, token });
-      }else{
+      } else {
         return res.status(400).json({ message: "invalid sp" });
       }
     }
@@ -127,18 +167,18 @@ const SignIn = async (req, res) => {
   }
 };
 
-const GetAllSPM = async(req,res) => {
+const GetAllSPM = async (req, res) => {
   try {
-    const usersdata = await User.find({usertype:"SPM"}).select("-password");
-    if(!usersdata){
-      return res.status(400).json({message:"no spm exist"})
-    }else{
-      return res.status(200).json(usersdata)
+    const usersdata = await User.find({ usertype: "SPM" }).select("-password");
+    if (!usersdata) {
+      return res.status(400).json({ message: "no spm exist" });
+    } else {
+      return res.status(200).json(usersdata);
     }
   } catch (error) {
-    return res.status(404).json({message:" can not get spm "+error});
+    return res.status(404).json({ message: " can not get spm " + error });
   }
-}
+};
 
 module.exports = {
   GetUsers,
@@ -149,4 +189,5 @@ module.exports = {
   UpdateUser,
   SignIn,
   GetAllSPM,
+  UserMobileCreation,
 };
