@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema({
   },
   usertype: {
     type: String,
-    default: "simple",
+    default: "SIMPLE",
   },
   createdat: {
     type: Date,

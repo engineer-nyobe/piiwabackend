@@ -51,7 +51,24 @@ const CreateTransactionUserToUser = async (req, res) => {
       if (!data) {
         return res.status(500).json({ message: "tansaction failed" });
       } else {
-        return res.status(201).json(data);
+        const info = await Transaction.findById(data._id)
+          .populate({
+            path: "sender",
+            select: { owner: 1 },
+            populate: {
+              path: "owner",
+              select: { phone: 1 },
+            },
+          })
+          .populate({
+            path: "receiver",
+            select: { owner: 1 },
+            populate: {
+              path: "owner",
+              select: { phone: 1 },
+            },
+          });
+        return res.status(201).json(info);
       }
     } catch (error) {
       return res.status(404).json(error);

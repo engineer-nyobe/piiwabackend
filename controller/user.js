@@ -56,42 +56,64 @@ const CreateUser = async (req, res) => {
     });
 };
 
+const serialNumber = () => {
+  const digits =
+    "0123456789";
+  let serial = "";
+  for (let i = 0; i < 5; i++) {
+    let rand = Math.floor(Math.random() * digits.length);
+    serial += digits[rand];
+  }
+  return serial;
+};
+
+const UserCodeValidation = async (req, res) => {
+  const { code } = req.body;
+  const UserExist = await User.findOne({ code });
+  if (!UserExist) {
+    return res.status(500).json({ message: "code error try again" });
+  }
+  const AccountCreation = new Account({
+    owner: UserExist._id,
+  });
+  const AccountCreated = await AccountCreation.save();
+  if (AccountCreated) {
+    const usercreated = await User.findByIdAndUpdate(
+      UserExist._id,
+      {
+        account: AccountCreated._id,
+      },
+      { new: true }
+    );
+    const token = jwt.sign({ id: UserExist._id }, secret, {
+      expiresIn: "1h",
+    });
+    return res.status(201).json({ userExist: usercreated, token });
+  } else {
+    return res.status(500).json({ message: "can not create an account" });
+  }
+};
+
 const UserMobileCreation = async (req, res) => {
   const { phone, password } = req.body;
   const UserExist = await User.findOne({ phone });
   if (UserExist) {
     return res.status(500).json({ message: "the user already  exist" });
   }
+  const serial = serialNumber();
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
-  const UserCreation = new User({ phone, password: hashedPassword });
+  const UserCreation = new User({
+    phone,
+    password: hashedPassword,
+    code: serial,
+  });
   const userCreated = await UserCreation.save();
   if (userCreated) {
-    const AccountCreation = new Account({
-      owner: userCreated._id,
-    });
-    const AccountCreated = await AccountCreation.save();
-    if (AccountCreated) {
-      const usercreated = await User.findByIdAndUpdate(
-        userCreated._id,
-        {
-          account: AccountCreated._id,
-        },
-        { new: true }
-      );
-      const token = jwt.sign(
-        { id: userCreated._id },
-        secret,
-        { expiresIn: "1h" }
-      );
-      return res.status(201).json({userExist:usercreated, token});
-    }else{
-      return res.status(500).json({ message: "can not create an account" });
-    }
-  }else{
+    return res.status(201).json(serial);
+  } else {
     return res.status(500).json({ message: "can not create this user" });
-
   }
 };
 
@@ -190,4 +212,5 @@ module.exports = {
   SignIn,
   GetAllSPM,
   UserMobileCreation,
+  UserCodeValidation,
 };

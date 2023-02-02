@@ -11,6 +11,7 @@ const {
   SignIn,
   GetAllSPM,
   UserMobileCreation,
+  UserCodeValidation,
 } = require("../controller/user");
 const router = express.Router();
 
@@ -28,6 +29,9 @@ router.post("/signin", SignIn);
 
 //create user by mobile
 router.post("/mobileuser", UserMobileCreation);
+
+//user code validation
+router.post("/code", UserCodeValidation);
 
 //count users
 router.get("/number", CountUser);
